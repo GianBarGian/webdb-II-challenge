@@ -11,6 +11,8 @@ const db = knex({
   }
 })
 
+// ERROR OBJECTS DECLARATION
+
 const error500 = {
   status: 500,
   message: 'Something went wrong',
@@ -25,6 +27,8 @@ const server = express();
 
 server.use(express.json());
 server.use(helmet());
+
+//ZOOS ENDPOINTS
 
 server.get('/api/zoos', async (req, res, next) => {
   try {
@@ -76,6 +80,64 @@ server.delete('/api/zoos/:id', async (req, res, next) => {
     const isDeleted = await db('zoos').where({ id }).del();
     isDeleted
       ? res.json({ message: "Animal Succesfully Deleted"})
+      : next(error404);
+  } catch (error) {
+    next(error500);
+  }
+})
+
+// BEARS ENDPOINTS
+
+server.get('/api/bears', async (req, res, next) => {
+  try {
+    const bears = await db('bears');
+    res.json(bears);
+  } catch (error) {
+    next(error500);
+  }
+})
+
+server.get('/api/bears/:id', async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const bearsArr = await db('bears').where({ id });
+    bearsArr 
+      ? res.json(bearsArr[0]) 
+      : next(error404);
+  } catch (error) {
+      next(error500);
+  }
+})
+
+server.post('/api/bears', async (req, res, body) => {
+  try {
+    const idArr = await db('bears').insert(req.body);
+    const bearsArr = await db('bears').where({ id: idArr[0] });
+    res.json(bearsArr[0]);
+  } catch (error) {
+    next(error500)
+  }
+})
+
+server.put('/api/bears/:id', async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const isUpdated = await db('bears').where({ id }).update(req.body);
+    const bearsArr = await db('bears').where({ id });
+    isUpdated
+      ? res.json(bearsArr[0])
+      : next(error404);
+  } catch (error) {
+    next(error500);
+  }
+})
+
+server.delete('/api/bears/:id', async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const isDeleted = await db('bears').where({ id }).del();
+    isDeleted
+      ? res.json({ message: "Bear Succesfully Deleted"})
       : next(error404);
   } catch (error) {
     next(error500);
